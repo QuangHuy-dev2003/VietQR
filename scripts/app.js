@@ -115,6 +115,38 @@
     toolsEl.hidden = false;
   }
 
+  async function copyOrShareCanvas(canvas) {
+    const blob = await new Promise((resolve) =>
+      canvas.toBlob(resolve, "image/png")
+    );
+    if (!blob) throw new Error("toBlob failed");
+
+    // 1) Try Clipboard API (desktop Chrome/Edge/Android Chrome mới)
+    try {
+      if (window.ClipboardItem && navigator.clipboard?.write) {
+        const item = new ClipboardItem({ "image/png": blob });
+        await navigator.clipboard.write([item]);
+        return { method: "clipboard" };
+      }
+      throw new Error("Clipboard image not supported");
+    } catch (_) {
+      // 2) Try Web Share API (iOS/Android: chia sẻ sang Ảnh/Tệp/Zalo…)
+      try {
+        const file = new File([blob], "vietqr.png", { type: "image/png" });
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: "VietQR" });
+          return { method: "share" };
+        }
+        throw new Error("Web Share not supported");
+      } catch (_) {
+        // 3) Fallback mở tab mới cho người dùng nhấn giữ để lưu/copy
+        const url = URL.createObjectURL(blob);
+        window.open(url, "_blank");
+        return { method: "open" };
+      }
+    }
+  }
+
   // Events
   amountEl.addEventListener("input", () => {
     const normalized = normalizeAmount(amountEl.value);
@@ -153,17 +185,18 @@
     const canvas = previewEl.querySelector("canvas");
     if (!canvas) return;
     try {
-      const blob = await new Promise((resolve) =>
-        canvas.toBlob(resolve, "image/png")
-      );
-      if (!blob) throw new Error("toBlob failed");
-      const item = new ClipboardItem({ "image/png": blob });
-      await navigator.clipboard.write([item]);
-      copyBtn.textContent = "Đã copy";
-      setTimeout(() => (copyBtn.textContent = "Copy ảnh"), 1200);
+      const result = await copyOrShareCanvas(canvas);
+      if (result.method === "clipboard") {
+        copyBtn.textContent = "Đã copy";
+        setTimeout(() => (copyBtn.textContent = "Copy ảnh"), 1200);
+      } else if (result.method === "share") {
+        // Không cần đổi label sau khi share
+      } else {
+        // Đã mở tab mới
+      }
     } catch (e) {
       console.error(e);
-      alert("Trình duyệt không hỗ trợ copy ảnh. Hãy dùng nút Tải ảnh.");
+      alert("Không thể sao chép/chia sẻ ảnh. Hãy dùng nút Tải ảnh.");
     }
   });
 
