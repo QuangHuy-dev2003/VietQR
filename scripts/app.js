@@ -45,12 +45,12 @@
     return ascii.replace(/ {2,}/g, " ");
   }
 
-  // Final normalize for submit: trim edges and lowercase
+  // Final normalize for submit: trim edges, giữ nguyên chữ hoa/thường
   function normalizeContentForSubmit(raw) {
     if (!raw) return "";
     const noAccent = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const ascii = noAccent.replace(/[^A-Za-z0-9 ]/g, "");
-    return ascii.replace(/\s+/g, " ").trim().toLowerCase();
+    return ascii.replace(/\s+/g, " ").trim();
   }
 
   function buildVietQrApiUrl(amount, description) {
