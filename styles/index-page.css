@@ -1,0 +1,201 @@
+/* index-page layout + BEM */
+.index-page__hero {
+  padding: 56px 0 20px;
+}
+.index-page__hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.index-page__title {
+  margin: 0;
+  font-size: 32px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  background: linear-gradient(180deg, #fff, #c7eaff 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
+}
+.index-page__subtitle {
+  margin: 0;
+  color: var(--color-text-dim);
+  text-align: center;
+}
+
+.index-page__content {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+  align-items: start;
+  padding: 20px 0 40px;
+}
+
+.index-page__card {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-1);
+}
+
+.index-page__preview {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-1);
+}
+
+.index-page__footer {
+  border-top: 1px solid var(--color-border);
+  margin-top: 10px;
+}
+.index-page__footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px var(--gutter) 34px;
+  color: var(--color-text-dim);
+  font-size: 14px;
+}
+
+/* Form */
+.qr-form {
+  display: grid;
+  gap: 18px;
+}
+.qr-form__row {
+  display: grid;
+  gap: 8px;
+}
+.qr-form__label {
+  font-weight: 600;
+  color: var(--color-text);
+}
+.qr-form__input-wrap {
+  display: grid;
+  gap: 6px;
+}
+.qr-form__hint {
+  color: var(--color-text-dim);
+  font-size: 12px;
+}
+.qr-form__input {
+  width: 100%;
+  background: var(--color-elevated);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px 14px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.qr-form__input:focus {
+  border-color: color-mix(in srgb, var(--color-primary), #fff 10%);
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--color-primary), transparent 80%);
+}
+.qr-form__input--amount {
+  letter-spacing: 0.02em;
+}
+.qr-form__actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 8px;
+  justify-content: center;
+}
+
+/* QR preview */
+.qr-preview {
+  display: grid;
+  place-items: center;
+  min-height: 340px;
+  background: repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.02) 0 8px,
+      rgba(255, 255, 255, 0.03) 8px 16px
+    ),
+    var(--color-elevated);
+  border: 1px dashed color-mix(in srgb, var(--color-border), #fff 8%);
+  border-radius: var(--radius-md);
+}
+.qr-preview__placeholder {
+  text-align: center;
+  color: var(--color-text-dim);
+}
+.qr-preview__badge {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 6px 10px;
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.2),
+    rgba(167, 139, 250, 0.2)
+  );
+  border: 1px solid color-mix(in srgb, var(--color-primary), #000 60%);
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c8f4ff;
+}
+.qr-preview__text {
+  margin: 0;
+}
+
+.qr-tools {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .index-page__content {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 640px) {
+  .index-page__title {
+    font-size: 26px;
+  }
+  .index-page__card,
+  .index-page__preview {
+    padding: 16px;
+  }
+  .qr-preview {
+    min-height: 300px;
+  }
+  .index-page__footer-inner {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
+/* Ultra small phones */
+@media (max-width: 380px) {
+  .index-page__title {
+    font-size: 22px;
+  }
+  .qr-form__actions {
+    flex-direction: column;
+  }
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

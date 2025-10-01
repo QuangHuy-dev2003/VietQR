@@ -1,0 +1,172 @@
+// VietQR generator for MBBANK - DAO QUANG HUY
+// Pure JS, uses qrcode library for QR rendering
+
+(function () {
+  "use strict";
+
+  // Bank constants (MBBANK default)
+  const BANK_BIN = "970422"; // MBBANK BIN per VietQR list
+  const ACCOUNT_NO = "091890889999";
+  const ACCOUNT_NAME = "DAO QUANG HUY";
+  const ACQUIRER = "vietqr";
+  const TEMPLATE = "compact2"; // visual template on api.vietqr.io
+
+  // Elements
+  const formEl = document.getElementById("qrForm");
+  const amountEl = document.getElementById("amount");
+  const contentEl = document.getElementById("content");
+  const previewEl = document.getElementById("qrPreview");
+  const toolsEl = document.getElementById("qrTools");
+  const generateBtn = document.getElementById("generateBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const copyBtn = document.getElementById("copyBtn");
+
+  // Helpers
+  function normalizeAmount(raw) {
+    if (!raw) return "";
+    const onlyDigits = String(raw).replace(/[^0-9]/g, "");
+    // Remove leading zeros
+    return onlyDigits.replace(/^0+(?!$)/, "");
+  }
+
+  function formatAmountDisplay(digits) {
+    if (!digits) return "";
+    // Use comma separators as requested (e.g., 10000 -> 10,000)
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
+  // Live sanitize: keep spaces while typing (do not trim or lowercase)
+  function sanitizeContentLive(raw) {
+    if (!raw) return "";
+    const noAccent = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const ascii = noAccent.replace(/[^A-Za-z0-9 ]/g, "");
+    // Collapse multiple spaces but keep leading/trailing to let user see the space
+    return ascii.replace(/ {2,}/g, " ");
+  }
+
+  // Final normalize for submit: trim edges and lowercase
+  function normalizeContentForSubmit(raw) {
+    if (!raw) return "";
+    const noAccent = raw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const ascii = noAccent.replace(/[^A-Za-z0-9 ]/g, "");
+    return ascii.replace(/\s+/g, " ").trim().toLowerCase();
+  }
+
+  function buildVietQrApiUrl(amount, description) {
+    // Using vietqr public render API: https://api.vietqr.io/image/<BIN>-<ACCOUNT>?amount=..&addInfo=..&accountName=..
+    const base = `https://api.vietqr.io/image/${BANK_BIN}-${ACCOUNT_NO}-${ACQUIRER}-${TEMPLATE}.png`;
+    const params = new URLSearchParams();
+    if (amount) params.set("amount", amount);
+    if (description) params.set("addInfo", description);
+    params.set("accountName", ACCOUNT_NAME);
+    return `${base}?${params.toString()}`;
+  }
+
+  async function loadImageAsCanvas(url, size = 512) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = size;
+        canvas.height = size;
+        // cover fit
+        const ratio = Math.max(size / img.width, size / img.height);
+        const w = Math.round(img.width * ratio);
+        const h = Math.round(img.height * ratio);
+        const dx = Math.round((size - w) / 2);
+        const dy = Math.round((size - h) / 2);
+        // background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, size, size);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, dx, dy, w, h);
+        resolve(canvas);
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
+
+  function clearPreview() {
+    previewEl.innerHTML = "";
+  }
+
+  function showPlaceholder() {
+    previewEl.innerHTML = `
+      <div class="qr-preview__placeholder">
+        <div class="qr-preview__badge">VietQR</div>
+        <p class="qr-preview__text">Mã QR sẽ xuất hiện tại đây</p>
+      </div>`;
+    toolsEl.hidden = true;
+  }
+
+  async function renderQrImage(url) {
+    clearPreview();
+    const canvas = await loadImageAsCanvas(url, 640);
+    canvas.style.maxWidth = "100%";
+    canvas.style.borderRadius = "12px";
+    previewEl.appendChild(canvas);
+    // Prepare tools
+    downloadBtn.href = canvas.toDataURL("image/png");
+    toolsEl.hidden = false;
+  }
+
+  // Events
+  amountEl.addEventListener("input", () => {
+    const normalized = normalizeAmount(amountEl.value);
+    amountEl.value = formatAmountDisplay(normalized);
+  });
+
+  contentEl.addEventListener("input", () => {
+    const live = sanitizeContentLive(contentEl.value);
+    contentEl.value = live;
+  });
+
+  resetBtn.addEventListener("click", () => {
+    amountEl.value = "";
+    contentEl.value = "";
+    showPlaceholder();
+  });
+
+  formEl.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    generateBtn.disabled = true;
+    try {
+      const amount = normalizeAmount(amountEl.value);
+      const description = normalizeContentForSubmit(contentEl.value);
+      const apiUrl = buildVietQrApiUrl(amount, description);
+      await renderQrImage(apiUrl);
+    } catch (err) {
+      console.error(err);
+      showPlaceholder();
+      alert("Không thể tạo ảnh VietQR. Vui lòng thử lại.");
+    } finally {
+      generateBtn.disabled = false;
+    }
+  });
+
+  copyBtn.addEventListener("click", async () => {
+    const canvas = previewEl.querySelector("canvas");
+    if (!canvas) return;
+    try {
+      const blob = await new Promise((resolve) =>
+        canvas.toBlob(resolve, "image/png")
+      );
+      if (!blob) throw new Error("toBlob failed");
+      const item = new ClipboardItem({ "image/png": blob });
+      await navigator.clipboard.write([item]);
+      copyBtn.textContent = "Đã copy";
+      setTimeout(() => (copyBtn.textContent = "Copy ảnh"), 1200);
+    } catch (e) {
+      console.error(e);
+      alert("Trình duyệt không hỗ trợ copy ảnh. Hãy dùng nút Tải ảnh.");
+    }
+  });
+
+  // Init
+  showPlaceholder();
+})();
