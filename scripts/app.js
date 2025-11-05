@@ -4,10 +4,11 @@
 (function () {
   "use strict";
 
-  // Bank constants (MBBANK default)
-  const BANK_BIN = "970422"; // MBBANK BIN per VietQR list
-  const ACCOUNT_NO = "091890889999";
+  // Bank config
   const ACCOUNT_NAME = "DAO QUANG HUY";
+  const BANKS = {
+    MBBANK: { bin: "970422", label: "MBBANK" },
+  };
   const ACQUIRER = "vietqr";
   const TEMPLATE = "compact2"; // visual template on api.vietqr.io
 
@@ -15,12 +16,17 @@
   const formEl = document.getElementById("qrForm");
   const amountEl = document.getElementById("amount");
   const contentEl = document.getElementById("content");
+  const bankSelectEl = document.getElementById("bankSelect");
+  const accountSelectEl = document.getElementById("accountSelect");
   const previewEl = document.getElementById("qrPreview");
   const toolsEl = document.getElementById("qrTools");
   const generateBtn = document.getElementById("generateBtn");
   const resetBtn = document.getElementById("resetBtn");
   const downloadBtn = document.getElementById("downloadBtn");
   const copyBtn = document.getElementById("copyBtn");
+  const summaryTextEl = document.getElementById("summaryText");
+  const footerBankEl = document.getElementById("footerBank");
+  const footerAccountEl = document.getElementById("footerAccount");
 
   // Helpers
   function normalizeAmount(raw) {
@@ -54,13 +60,34 @@
   }
 
   function buildVietQrApiUrl(amount, description) {
+    const bankCode = bankSelectEl.value || "MBBANK";
+    const bin = BANKS[bankCode]?.bin || BANKS.MBBANK.bin;
+    const accountNo = accountSelectEl.value;
     // Using vietqr public render API: https://api.vietqr.io/image/<BIN>-<ACCOUNT>?amount=..&addInfo=..&accountName=..
-    const base = `https://api.vietqr.io/image/${BANK_BIN}-${ACCOUNT_NO}-${ACQUIRER}-${TEMPLATE}.png`;
+    const base = `https://api.vietqr.io/image/${bin}-${accountNo}-${ACQUIRER}-${TEMPLATE}.png`;
     const params = new URLSearchParams();
     if (amount) params.set("amount", amount);
     if (description) params.set("addInfo", description);
     params.set("accountName", ACCOUNT_NAME);
     return `${base}?${params.toString()}`;
+  }
+
+  function updateSummaryAndFooter() {
+    const bankCode = bankSelectEl.value || "MBBANK";
+    const accountNo = accountSelectEl.value;
+    const bankLabel = BANKS[bankCode]?.label || bankCode;
+    if (summaryTextEl) {
+      summaryTextEl.textContent = `${bankLabel} • ${ACCOUNT_NAME} • ${accountNo}`;
+    }
+    if (footerBankEl) {
+      footerBankEl.textContent = `Chuẩn VietQR • ${bankLabel}`;
+    }
+    if (footerAccountEl) {
+      footerAccountEl.textContent = `Tài khoản: ${accountNo} • Chủ TK: ${ACCOUNT_NAME}`;
+    }
+    // Update default download name to reflect selection
+    const fileName = `vietqr-${bankCode.toLowerCase()}-${accountNo}.png`;
+    downloadBtn.setAttribute("download", fileName);
   }
 
   async function loadImageAsCanvas(url, size = 512) {
@@ -164,6 +191,14 @@
     showPlaceholder();
   });
 
+  bankSelectEl.addEventListener("change", () => {
+    updateSummaryAndFooter();
+  });
+
+  accountSelectEl.addEventListener("change", () => {
+    updateSummaryAndFooter();
+  });
+
   formEl.addEventListener("submit", async (e) => {
     e.preventDefault();
     generateBtn.disabled = true;
@@ -201,5 +236,9 @@
   });
 
   // Init
+  // Ensure defaults (MBBANK + 231003999999) are reflected in UI
+  if (bankSelectEl) bankSelectEl.value = "MBBANK";
+  if (accountSelectEl) accountSelectEl.value = "231003999999";
+  updateSummaryAndFooter();
   showPlaceholder();
 })();

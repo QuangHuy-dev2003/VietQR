@@ -20,8 +20,8 @@
       <section class="index-page__hero">
         <div class="index-page__hero-inner container">
           <h1 class="index-page__title">Tạo mã VietQR chuyển khoản</h1>
-          <p class="index-page__subtitle">
-            MBBANK • DAO QUANG HUY • 091890889999
+          <p class="index-page__subtitle" id="summaryText">
+            MBBANK • DAO QUANG HUY • 231003999999
           </p>
         </div>
       </section>
@@ -29,6 +29,27 @@
       <section class="index-page__content container">
         <div class="index-page__card">
           <form class="qr-form" id="qrForm" autocomplete="off">
+            <div class="qr-form__row">
+              <label class="qr-form__label" for="bankSelect">Ngân hàng</label>
+              <div class="qr-form__input-wrap">
+                <select id="bankSelect" name="bank" class="qr-form__input">
+                  <option value="MBBANK" selected>MBBANK</option>
+                </select>
+                <span class="qr-form__hint">Hiện hỗ trợ MBBANK (BIN 970422)</span>
+              </div>
+            </div>
+
+            <div class="qr-form__row">
+              <label class="qr-form__label" for="accountSelect">Số tài khoản</label>
+              <div class="qr-form__input-wrap">
+                <select id="accountSelect" name="accountNo" class="qr-form__input">
+                  <option value="091890889999">091890889999</option>
+                  <option value="231003999999" selected>231003999999</option>
+                  <option value="3726217012003">3726217012003</option>
+                </select>
+                <span class="qr-form__hint">Mặc định: 231003999999</span>
+              </div>
+            </div>
             <div class="qr-form__row">
               <label class="qr-form__label" for="amount">Số tiền (VND)</label>
               <div class="qr-form__input-wrap">
@@ -89,7 +110,7 @@
             <a
               class="btn btn--secondary"
               id="downloadBtn"
-              download="vietqr-mbbank-dao-quang-huy.png"
+              download="vietqr-mbbank-231003999999.png"
               >Tải ảnh</a
             >
           </div>
@@ -98,16 +119,12 @@
 
       <footer class="index-page__footer">
         <div class="container index-page__footer-inner">
-          <span>Chuẩn VietQR • MBBANK</span>
-          <span>Tài khoản: 091890889999 • Chủ TK: DAO QUANG HUY</span>
+          <span id="footerBank">Chuẩn VietQR • MBBANK</span>
+          <span id="footerAccount">Tài khoản: 231003999999 • Chủ TK: DAO QUANG HUY</span>
         </div>
       </footer>
     </main>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"
-      integrity="sha256-k5jWrnF4kI0YkDNeSok0XjQv3xob2l7J0g9M7r0mby0="
-      crossorigin="anonymous"></script>
     <script src="scripts/app.js"></script>
   </body>
 </html>
